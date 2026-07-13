@@ -9,7 +9,7 @@ import teacherRoute from "./teacher.js";
 //import meRoute from "./routes/me.js";
 
 const app = express();
-const port = 2000;
+const Port = process.env.Port || 2000;
 const supabase = supabaseAdmin;
 
 app.use(express.json());
@@ -663,6 +663,6 @@ app.get('/fees/status', authC, async (req,res)=>{
   }
 });*/
 
-app.listen(port,"0.0.0.0",()=>{
+app.listen(Port,"0.0.0.0",()=>{
   console.log(`server running on http://0.0.0.0:${port}`);
 })
