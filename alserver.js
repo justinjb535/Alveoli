@@ -664,5 +664,5 @@ app.get('/fees/status', authC, async (req,res)=>{
 });*/
 
 app.listen(Port,"0.0.0.0",()=>{
-  console.log(`server running on http://0.0.0.0:${port}`);
+  console.log(`server running on http://0.0.0.0:${Port}`);
 })
