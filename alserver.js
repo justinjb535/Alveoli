@@ -200,7 +200,7 @@ app.get('/stats/students',authC, async (req,res)=>{
 });
 
 
-app.post('/subjects/add',authC, express.json(), async (req,res)=>{
+/*app.post('/subjects/add',authC, express.json(), async (req,res)=>{
   try {
    console.log("req.user.type on sub",typeof req.user.id);
    console.log("req.user.value ",req.user.id);
@@ -228,16 +228,88 @@ app.post('/subjects/add',authC, express.json(), async (req,res)=>{
     console.error(error);
     res.status(500).json({ success: false, message: "Server failed" });
   }
+const { error: insertError } = await supabase
+  .from('subjects')
+  .insert({ owner_id, name: subject });
+
+if (insertError) {
+  console.error("Insert error:", insertError);
+  return res.json({ success: false, message: insertError.message });
+}
 });
 
-app.get('/subjects', authC,async (req,res)=>{
+/*app.get('/subjects', authC,async (req,res)=>{
   try {
     console.log("GET/SUBJECTS CALLED");
+    const owner_id  = req.user.id;
+
     const { data } = await supabase
       .from('subjects')
       .select('name')
       .eq('owner_id', req.user.id)
       .order('name');
+
+    res.json({ success: true, subjects: data?.map(d => d.name) || [] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server failed" });
+  }
+});
+*/
+app.post('/subjects/add',authC, express.json(), async (req,res)=>{
+  try {
+    const { subject } = req.body;
+    const owner_id  = req.user.id;
+
+    if(!subject) return res.json({ success: false, message: "Subject cannot be empty"});
+
+    const { data: exists } = await supabase
+      .from('subjects')
+      .select('id')
+      .eq('owner_id',owner_id)
+      .eq('name', subject)
+      .single();
+
+    if(exists) return res.json({ success: false, message: "Subject already exists"});
+
+    const { error: insertError } = await supabase
+      .from('subjects')
+      .insert({ owner_id, name: subject });
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return res.json({ success: false, message: insertError.message });
+    }
+
+    const { data } = await supabase
+      .from('subjects')
+      .select('name')
+      .eq('owner_id', owner_id)
+      .order('name');
+
+    res.json({ success: true, subjects: data?.map(d => d.name) || [] });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server failed" });
+  }
+});
+
+app.get('/subjects', authC, async (req,res)=>{
+  try {
+    console.log("GET/SUBJECTS CALLED");
+    const owner_id = req.user.id; // ✅ declare it here
+
+    const { data, error } = await supabase
+      .from('subjects')
+      .select('name')
+      .eq('owner_id', owner_id)
+      .order('name');
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.json({ success: false, message: error.message });
+    }
 
     res.json({ success: true, subjects: data?.map(d => d.name) || [] });
   } catch (error) {
@@ -268,8 +340,8 @@ app.get('/students/grade/:grade',authC, async (req,res)=>{
 
 app.post('/marks/save', authC, express.json(), async (req, res) => {
   try {
-    console.log("req.user.type",typeof req.user.id);
-   console.log("req.user.value",req.user.id);
+    //console.log("req.user.type",typeof req.user.id);
+   // console.log("req.user.value",req.user.id);
     const { grade, subject, term, paperNo, total, marks } = req.body; // marks = [{studentId, mark}]
     const owner_id = req.user.id;
 
@@ -281,7 +353,7 @@ app.post('/marks/save', authC, express.json(), async (req, res) => {
       term,
       paper_no: paperNo,
       total_marks: total,
-      mark: m.mark,
+      score: m.mark,
       date: new Date().toISOString()
     }));
 
@@ -294,53 +366,6 @@ app.post('/marks/save', authC, express.json(), async (req, res) => {
     res.status(500).json({ success: false, message: "Server failed" });
   }
 });
-
-/*app.get('/students/list/:grade',authC,async (req,res)=>{
-  try {
-    console.log("req.user.type",typeof req.user.id);
-   console.log("req.user.value",req.user.id);
-    const grade = req.params.grade;
-    const search = (req.query.search || '').toLowerCase().trim();
-    const owner_id  = req.user.id;
-
-    let query = supabase
-      .from('students')
-      .select('*')
-      .eq('owner_id', owner_id)
-      .eq('grade', grade)
-      .order('full_name');
-
-    if (search) query = query.ilike('full_name', `%${search}%`);
-
-    const { data: students } = await query
-
-    // Count tests per student from marks table
-    const { data: marks } = await supabase
-      .from('marks')
-      .select('owner_id')
-      .eq('owner_id', owner_id)
-      .eq('grade', grade);
-
-    const testCounts = {};
-    marks?.forEach(m => testCounts[m.student_id] = (testCounts[m.student_id] || 0) + 1);
-
-    const result = students?.map(s => ({
-      id: s.student_number,
-      name: s.full_name,
-      parent: s.parent_name,
-      phone: s.parent_phone,
-      dob: s.date_of_birth,
-      testsWritten: testCounts[s.student_number] || 0,
-      registeredAt: s.registered_at
-    })) || [];
-
-    res.json({ success: true, students: result, count: result.length });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server failed" });
-  }
-});
-*/
 
 app.get('/students/list/:grade',authC,async (req,res)=>{
   try {
