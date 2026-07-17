@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="white">
+  <title>Login Page</title>
+  <style>
+    :root{--bg:#0f172a; --card:rgba(255,255,255,0.08); --accent:#6366f1; --text:#e2e8f0; --muted:#94a3b8;}
+    *{box-sizing:border-box; margin:0; padding:0; font-family: Inter, system-ui, sans-serif;}
+    body{min-height:100vh; display:grid; place-items:center; background: radial-gradient(1200px 800px at 80% -10%, #1e293b, transparent), radial-gradient(800px 600px at -10% 110%, #312e81, transparent), var(--bg); color:var(--text);}
+    .card{width:100%; max-width:380px; padding:28px; background: var(--card); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius:20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);}
+    h2{font-size:1.5rem; margin-bottom:4px;}
+    .sub{color:var(--muted); font-size:0.9rem; margin-bottom:20px;}
+    input{width:100%; padding:12px 14px; margin:8px 0; background: rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:var(--text); outline:none;}
+    input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(99,102,241,0.2);}
+    button{width:100%; padding:12px; margin-top:10px; background:var(--accent); color:white; font-weight:600; border:none; border-radius:12px; cursor:pointer;}
+    button:hover{filter:brightness(1.1); transform:translateY(-1px);}
+    button.google{background:white; color:#1f2937; display:flex; align-items:center; justify-content:center; gap:8px;}
+    hr{border:none; height:1px; background:rgba(255,255,255,0.1); margin:18px 0;}
+  </style>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const SUPABASE_URL = 'https://pctbcbdqgicazzgwlrhr.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_Ck_wUGp0GaYOiyri3LC2VQ_VJ4um9uL'
+const BASE_URL = 'https://alveoli.onrender.com'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
+
+const handleRedirect = async () => {
+  const { data: { session }} = await supabase.auth.getSession(); // <-- get it here
+  
+  if(!session) return;// no session yet, stay on login page
+
+  console.log('TOKEN EXISTS:', !!session.access_token);
+
+  // Check if user already has a school in YOUR backend
+  const res = await fetch(`${BASE_URL}/me`, {
+    headers: { 'Authorization': `Bearer ${session.access_token}` }
+  });
+  
+  if(res.status === 200){
+
+    window.location.href = 'dash.html'; 
+  document.getElementById('regi').style.display = "none";// has school
+  }
+  else if(res.status === 404) {
+    document.getElementById('regi').style.display = "block"
+  } // no school yet
+  else {
+    alert('Auth error. Please login again');
+    await supabase.auth.signOut();
+  }
+}
+
+window.emailLogin = async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) return alert(error.message);
+  handleRedirect(); // login sets session, then check /me
+}
+
+window.googleLogin = async () => {
+  await supabase.auth.signInWithOAuth({ 
+    provider: 'google',
+    options: { redirectTo: `${BASE_URL}/login.html` }
+  })
+}
+
+// When Google OAuth redirects back
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session) handleRedirect()
+})
+
+// Run on page load
+handleRedirect();
+</script>
+
+</head>
+<body>
+  <div class="card">
+    <h2>Welcome Back</h2>
+    <p class="sub">Head Login to STLS</p>
+<div id="regi" style="display:none;">
+  <!-- your register school form -->
+</div>
+    <input id="email" type="email"= placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="emailLogin()">Login</button>
+
+    <hr>
+    <button class="google" onclick="googleLogin()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.3-5.7 7.5-11.3 7.5-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20.3-7.6 20.3-21 0-1.4-.1-2.7-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+    
+   <button id='regi'><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+<circle fill="green" cx="24" cy="24" r="21"/>
+<text x="24" y="32" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle">A</text>
+</svg> Register your School</button>
+  </div>
+
+</body>
+</html>	

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d6efd">
+<title>Alveoli Cloud Loading</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+
+  background:
+  radial-gradient(circle at top,#444 0%,#333 40%,#020617 100%);
+
+  /*font-family:Arial,sans-serif;*/
+  color:white;
+}
+
+/* Floating particles */
+
+.particle{
+  position:absolute;
+  width:4px;
+  height:4px;
+  background:green;
+  border-radius:50%;
+  opacity:.9;
+  animation:float 9s linear infinite;
+}
+
+.particle:nth-child(1){left:10%;animation-delay:0s;}
+.particle:nth-child(2){left:20%;animation-delay:1s;}
+.particle:nth-child(3){left:35%;animation-delay:2s;}
+.particle:nth-child(4){left:50%;animation-delay:3s;}
+.particle:nth-child(5){left:70%;animation-delay:4s;}
+.particle:nth-child(6){left:90%;animation-delay:5s;}
+
+@keyframes float{
+  from{
+    transform:translateY(100vh);
+  }
+  to{
+    transform:translateY(-100px);
+  }
+}
+
+/* Card */
+
+.loader-card{
+  width:340px;
+  padding:30px;
+
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(20px);
+
+  border:0.1px solid /* rgba(255,255,255,.1)*/ white;
+
+  border-radius:25px;
+
+  text-align:center;
+
+  box-shadow:
+  0 2px 30px rgba(0,0.9,0);
+}
+
+.logo{
+  font-size:30px;
+  font-weight:bold;
+  margin-bottom:15px;
+}
+
+.logo span{
+  color:#119000;
+}
+
+/* SVG */
+
+svg{
+  width:220px;
+  margin:auto;
+  display:block;
+}
+
+.cloud{
+  fill:none;
+  stroke:white;
+  stroke-width:10;
+  stroke-linecap:round;
+
+  filter:drop-shadow(0 0 5px #FFFFFF4A );
+
+  stroke-dasharray:1000;
+  stroke-dashoffset:1000;
+
+  animation:drawCloud 4s ease-in-out infinite;
+}
+
+@keyframes drawCloud{
+  0%{
+    stroke-dashoffset:1000;
+  }
+
+  50%{
+    stroke-dashoffset:0;
+  }
+
+  100%{
+    stroke-dashoffset:-1000;
+  }
+}
+
+.loading-text{
+  margin-top:15px;
+  color:#cbd5e1;
+  font-size:14px;
+  animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+  50%{
+    opacity:.4;
+  }
+}
+
+/* Progress */
+
+.progress{
+  width:100%;
+  height:10px;
+  background:rgba(255,255,255,.08);
+  border-radius:50px;
+  overflow:hidden;
+  margin-top:20px;
+}
+
+.progress-bar{
+  height:100%;
+  width:40%;
+  border-radius:50px;
+
+  background:linear-gradient(
+  90deg,
+ /* #38bdf8*/green,
+  /*#60a5fa*/ green,
+  /*#38bdf8*/ green
+  );
+
+  animation:loading 2s infinite;
+}
+
+@keyframes loading{
+  0%{
+    transform:translateX(-100%);
+  }
+
+  100%{
+    transform:translateX(300%);
+  }
+}
+
+.version{
+  margin-top:15px;
+  font-size:12px;
+  color:#94a3b8;
+}
+
+#logo{
+    position:fixed;
+    left:4px;
+    margin-top:35%;
+    width:85px;
+    height:60px;
+    text-align:center;
+    background:none;
+    border-radius:15px;
+    text-shadow:0 0 2px antiquewhite;
+    font-family:courier new;
+    opacity:;
+}
+#S{
+    font-size:25px;
+    font-family:courier new;
+    color: white;
+}
+#K{
+    position:absolute;
+    top:7px;
+    margin-left:15px;
+    transform: rotate(15deg);
+    color: yellow;
+    font-size:25px;
+    font-family:courier new;
+}
+#Y{
+    position:absolute;
+    top:25px;
+    left:0;
+    font-size:25px;
+    color:blue;
+    font-family:courier new;
+}
+#i{
+    position:absolute;
+    top:25px;
+    left:0;
+    font-size:25px;
+    color:#079104D4;
+    font-family:courier new;
+}
+#E{
+    position:absolute;
+    top:25px;
+    margin-left:-2px;
+    font-size:25px;
+    font-family:courier new;
+    color:white;
+}
+</style>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const SUPABASE_URL = 'https://pctbcbdqgicazzgwlrhr.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_Ck_wUGp0GaYOiyri3LC2VQ_VJ4um9uL'
+const BASE_URL = 'https://alveoli.onrender.com'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
+
+  let checked = false; // prevent double redirect
+
+  const doRedirect = async () => {
+    if(checked) return;
+    checked = true;
+
+    const { data: { session }} = await supabase.auth.getSession();
+
+    if(!session) {
+      console.log('NO TOKEN - Go to login');
+      document.querySelector('.loading-text').innerText = "No session found. Redirecting to login...";
+      setTimeout(() => window.location.href = 'register.html', 1500);
+      return;
+    }
+
+    console.log('TOKEN EXISTS:',!!session.access_token);
+
+    try {
+      // Give backend 10s to wake up
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 sec timeout
+
+      const res = await fetch(`${BASE_URL}/me`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if(res.status === 200){
+        document.querySelector('.loading-text').innerText = "Welcome back!";
+        setTimeout(() => window.location.href = 'dash.html', 800); 
+      }
+      else if(res.status === 404) {
+        document.querySelector('.loading-text').innerText = "Let's set up your school";
+        document.getElementById('regi').style.display = "block"
+        document.querySelector('.progress-bar').style.animation = 'none'; // stop loading bar
+      }
+      else {
+        throw new Error('Auth error')
+      }
+    } catch(e) {
+      console.log(e);
+      document.querySelector('.loading-text').innerText = "Server waking up... retrying";
+      // Retry once after 3 sec
+      setTimeout(() => { checked = false; doRedirect(); }, 3000);
+    }
+  }
+
+  // Start: Show loading for at least 3 sec so animation plays, then check
+  setTimeout(doRedirect, 6000); 
+
+  setTimeout(doRedirect, 10000);
+</script>
+</head>
+
+<body>
+
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+
+<div class="loader-card">
+
+  <div class="logo">
+    Alveoli <span>Cloud</span>
+  </div>
+
+  <svg viewBox="0 0 900 500">
+
+    <path
+      class="cloud"
+      d="M95 340 Q120 320 170 325
+      Q150 270 210 250
+      Q290 225 340 260
+      Q340 170 430 145
+      Q530 120 585 185
+      Q620 160 655 190
+      Q715 240 715 325
+      L815 327">
+    </path>
+
+  </svg>
+
+  <div class="loading-text">
+    Loading...
+  </div>
+
+  <div class="progress">
+    <div class="progress-bar"></div>
+  </div>
+
+  <div class="version">
+    Educational Intelligence Platform
+  </div>
+
+</div>
+<div style="position:fixed; bottom:1%; right:5%; opacity:0.6">
+  <div class="logo">
+     <span id="S">S</span> 
+    <p id="K">K</p>
+    <span id="Y">Y</span>
+    <p id="i">I</p>
+    <span id="E">E</span>
+</div>  
+    <h5>industries</h5>
+</div>
+</body>
+</html>

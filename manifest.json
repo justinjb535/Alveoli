@@ -1,0 +1,22 @@
+{
+  "name": "Alveoli Cloud",
+  "short_name": "Alveoli",
+  "description": "Alveoli Students Tracking Ledger System (STLS) learning platform",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "white",
+  "icons": [
+    {
+      "src": "IMG_20260714_194104.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "A_20260714_180909_0000 (1).png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
