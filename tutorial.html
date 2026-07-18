@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <style type="text/css" media="all">
+        .figure{
+            background:#222;
+            height:100px;
+            width:100%;
+            max-width:400px;
+            border-radius:20px;
+            margin:10px auto;
+        }
+        #b1{
+            border-radius:20px;
+            padding:10px 20px;
+            width:80%;
+            background:#ddd;
+            color:black;
+            border:none;
+            position: relative;
+            left:50%;
+            top:50%;
+            transform:translate(-50%,-50%);
+            /*display:flex;
+            justify-content:space-around;
+            flex-direction:column;
+            align-items:center;*/
+        }
+        #cloud{
+            width:300px;
+            height:280px;
+            position: relative;
+            left:50%;
+            top:50%;
+            transform:translate(-50%,-50%);
+        }
+        #tm{
+            position:absolute;
+            right:60px;
+            top:1530px;
+            color:white;
+            font-size:30px;
+        }
+        #logo{
+    position:fixed;
+    left:4px;
+    margin-top:35%;
+    width:85px;
+    height:60px;
+    text-align:center;
+    background:none;
+    border-radius:15px;
+    text-shadow:0 0 23px black;
+    font-family:courier new;
+    opacity:0.6;
+}
+#S{
+    font-size:25px;
+    font-family:courier new;
+    color: #444;
+    text-shadow:0 0 23px black;
+}
+#K{
+    position:absolute;
+    top:-24px;
+    margin-left:14px;
+    transform: rotate(15deg);
+    color: yellow;
+    font-size:25px;
+    font-family:courier new;
+    text-shadow:0 0 23px black;
+}
+#Y{
+    position:absolute;
+    top:20px;
+    left:0;
+    font-size:25px;
+    color:blue;
+    font-family:courier new;
+    text-shadow:0 0 23px black;
+}
+#i{
+    position:absolute;
+    top:-5px;
+    left:0;
+    font-size:25px;
+    color:red;
+    font-family:courier new;
+    
+}
+#E{
+    position:absolute;
+    top:20px;
+    margin-left:-2px;
+    font-size:25px;
+    font-family:courier new;
+    color:#444;
+    text-shadow:0 0 23px black;
+}
+    </style>
+</head>
+<body>
+<header style="text-align:center; padding:15px; background:#ffffff; color:#ccc;text-shadow:2px 1px 1px black;">
+  <h1>STLS by Alveoli Cloud</h1>
+  <p>User Tutorial Guide</p>
+</header>
+<div>
+    <h3>In this page you'll be learning about</h3>
+    <ul>
+        <li>Exiting pages </li>
+        <li>Student registration</li>
+        <li>fees payment</li>
+        <li>setting school fees amount</li>
+        <li>students tracking</li>
+    </ul>
+    <h3>And other systems which will be introduced soon</h3>
+</div>
+
+<div>
+    <h3>1.Exiting pages</h3>
+    <p>(a) On pages like <b>Dashboard, students & Marks</b>, on the bottom of the screen there's a huge white button writen exit which will look like the example given below. 👇</p>
+    <div class="figure">
+      <button id="b1">Exit</button>  
+    </div>
+    <p>You'll just click the button and you'll be directed right back to the main Page.</p>
+    <p>(b) On pages like <b>Register students, subjects & fees page</b>, you'll have swipe down from the top of your screen till your hear a animation sound or till you see an icon written <b>swipe down to exit</b></p>
+
+</div>
+<div>
+    <h3>2. Student Registration </h3>
+<p>STLS handles automated tasks for you like Student IDs and student counts.</p>
+<p>As the Head, Bursar, or Admin, you just enter: First Name, Middle Name, Surname, Grade, and Parent Details.</p>
+<p>The system prevents duplicate entries. Once registered, each student gets their own Student Identification Number - SiD.</p>
+</div>
+<div>
+    <h3>3.Fees Payment</h3>
+    <p>fees payment and setting up school fees amount  are all in the same page the Head , bursur or admin will have to set up the amount of school fees that should be paid by every student  </p>
+    <p>fees payment you just have to enter students name and grade then you have get a drop down list of related filter you'll just have to choose the correct student </p>
+</div>
+<div>
+    <h3>4.Student Tracking</h3>
+    <p>Teachers, admins and heads of the school can track student's performance and like test they wrote in teh past few weeks,  months or years . you can also track their parents phone numbers in case of emergencies that the child might have aquired </p>
+</div>
+<div style="text-align:center; margin:30px;">
+  <a href="dash.html" style="padding:10px 20px; background:black; color:white; text-decoration:none; border-radius:10px;">← Back to Main</a>
+</div>
+<div style="width:80%;height:200px;background:black;margin:10px auto;border-radius:10px;">
+    <img src="/image_1780383490891-removebg-preview (1).png" id="cloud"/>
+    <p id="tm">™</p>
+</div>
+
+<div style="position:fixed; bottom:1%; right:5%; opacity:1">
+  <div class="logo">
+     <span id="S">S</span> 
+    <p id="K">K</p>
+    <span id="Y">Y</span>
+    <p id="i">I</p>
+    <span id="E">E</span>
+</div>  
+    <h5>industries</h5>
+</div>
+</body>
+</html>
