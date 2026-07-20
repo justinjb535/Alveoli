@@ -111,11 +111,65 @@ app.get('/dashboard-stats', authC, async (req,res)=>{
    console.log("everything loaded");
 });
 
-app.post('/generate/studentNumber',authC, async (req,res)=>{
+function isOnlyText(text) {
+  // only letters, spaces, . ' -
+  const regex = /^[a-zA-Z\s.'-]+$/;
+  return regex.test(text.trim()) && text.trim().length > 0;
+}
+function validatePhone(pP) {
+  const trimmed = pP.trim();
+  // Local numbers: 10 digits
+  if (/^\d+$/.test(trimmed)) {
+    if (trimmed.length < 10) {
+      const missing = 10 - trimmed.length;
+      return { valid: false, message: `Phone number is too short. Add ${missing} more digit(s).` };
+    }
+    if (trimmed.length > 10) {
+      return { valid: false, message: "Local phone number must be exactly 10 digits." };
+    }
+    return { valid: true };
+  }
+
+  // International numbers: + followed by 11–15 digits
+  if (/^\+\d+$/.test(trimmed)) {
+    if (trimmed.length < 12) { // + plus at least 11 digits
+      const missing = 12 - trimmed.length;
+      return { valid: false, message: `International number too short. Add ${missing} more digit(s).` };
+    }
+    if (trimmed.length > 16) {
+      return { valid: false, message: "International number too long." };
+    }
+    return { valid: true };
+  }
+
+  return { valid: false, message: "Invalid phone number format." };
+}
+
+app.post('/generate/studentNumber', authC, async (req,res)=>{
  try{
   console.log("HIT /generate/studentNumber");
   const {stNm, dob, grade, pNm, pP} = req.body;
-  const owner_id = req.user.id; // added fallback
+
+  // FIXED: Added ! in front of isOnlyText
+  if(!stNm || !isOnlyText(stNm)){
+   return res.status(400).json({success:false, message:"Full name must only contain letters"});
+  }
+  if (!pNm || !isOnlyText(pNm)) {
+   return res.status(400).json({ success:false, message:"Parent name must only contain letters" });
+  }
+
+  if (pNm.trim() === stNm.trim()) {
+   return res.status(400).json({ success:false, message:"Parent name cannot be the same as student name" });
+  }
+  if(!dob || !grade) {
+    return res.status(400).json({success:false, message:"DOB and Grade required"});
+  }
+  const phoneCheck = validatePhone(pP);
+
+  if(!phoneCheck.valid){
+    return res.status(400).json({success:false, message:phoneCheck.message});
+  }
+  const owner_id = req.user.id; // <- you logged this as .value not .id
   const year = new Date().getFullYear().toString().slice(-2);
 
   if(!owner_id) {
@@ -148,8 +202,8 @@ app.post('/generate/studentNumber',authC, async (req,res)=>{
     studentNo = `SID${year}${String(maxNum + 1).padStart(4,"0")}`;
 
     const { error } = await supabase.from("students").insert({
-      owner_id, student_number: studentNo, full_name: stNm,
-      date_of_birth: dob, grade, parent_name: pNm, parent_phone: pP,
+      owner_id, student_number: studentNo, full_name: stNm.trim(), // added trim
+      date_of_birth: dob, grade, parent_name: pNm, parent_phone: pP,school_name:req.user.user_metadata?.school_name || null,
       registered_at: new Date().toISOString()
     });
 
@@ -166,10 +220,11 @@ app.post('/generate/studentNumber',authC, async (req,res)=>{
   return res.status(500).json({ success: false, message: "Could not generate unique SID" });
 
  }catch(error){
-  console.error("ROUTE CRASHED:", error); // This is key
-  res.status(500).json({ success:false, message: error.message || "server failed" }); // Always return json
+  console.error("ROUTE CRASHED:", error); 
+  res.status(500).json({ success:false, message: error.message || "server failed" });
  }
 });
+
 app.get('/stats/students',authC, async (req,res)=>{
   try {
    console.log("req.user.type",typeof req.user.id);
@@ -199,63 +254,6 @@ app.get('/stats/students',authC, async (req,res)=>{
   }
 });
 
-
-/*app.post('/subjects/add',authC, express.json(), async (req,res)=>{
-  try {
-   console.log("req.user.type on sub",typeof req.user.id);
-   console.log("req.user.value ",req.user.id);
-    const { subject } = req.body;
-    const owner_id  = req.user.id;
-
-    if(!subject) return res.json({ success: false, message: "Subject cannot be empty"});
-
-    // Check if exists in DB
-    const { data: exists } = await supabase
-      .from('subjects')
-      .select('id')
-      .eq('owner_id',owner_id)
-      .eq('name', subject)
-      .single();
-
-    if(exists) return res.json({ success: false, message: "Subject already exists"});
-
-    await supabase.from('subjects').insert({ owner_id, name: subject });
-
-    const { data } = await supabase.from('subjects').select('name').eq('owner_id', owner_id).order('name');
-    res.json({ success: true, subjects: data?.map(d => d.name) || [] });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server failed" });
-  }
-const { error: insertError } = await supabase
-  .from('subjects')
-  .insert({ owner_id, name: subject });
-
-if (insertError) {
-  console.error("Insert error:", insertError);
-  return res.json({ success: false, message: insertError.message });
-}
-});
-
-/*app.get('/subjects', authC,async (req,res)=>{
-  try {
-    console.log("GET/SUBJECTS CALLED");
-    const owner_id  = req.user.id;
-
-    const { data } = await supabase
-      .from('subjects')
-      .select('name')
-      .eq('owner_id', req.user.id)
-      .order('name');
-
-    res.json({ success: true, subjects: data?.map(d => d.name) || [] });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server failed" });
-  }
-});
-*/
 app.post('/subjects/add',authC, express.json(), async (req,res)=>{
   try {
     const { subject } = req.body;
@@ -367,6 +365,70 @@ app.post('/marks/save', authC, express.json(), async (req, res) => {
   }
 });
 
+app.get('/dashboard/passrate', authC, async (req,res)=>{
+  try {
+    const owner_id = req.user.id;
+    const { grade, term } = req.query; // e.g. /dashboard/passrate?grade=12&term=Term1
+    const PASS_MARK = 50; // change this if your school uses 40
+
+    // 1. Get total students in that grade
+    const { data: students, error: sErr } = await supabase
+     .from('students')
+     .select('student_number')
+     .eq('owner_id', owner_id)
+     .eq('grade', grade);
+
+    if(sErr) throw sErr;
+    const totalStudents = students.length;
+    if(totalStudents === 0) return res.json({ success: true, passRate: 0, total: 0, passed: 0 });
+
+    const studentIds = students.map(s => s.student_number);
+
+    // 2. Get average mark per student for that term + grade
+    const { data: marks, error: mErr } = await supabase
+     .from('marks')
+     .select('student_id, score, total_marks')
+     .eq('owner_id', owner_id)
+     .eq('grade', grade)
+     .eq('term', term)
+     .in('student_id', studentIds);
+
+    if(mErr) throw mErr;
+
+    // 3. Calculate % per student, then see if they passed
+    const studentScores = {};
+    marks.forEach(m => {
+      if(!studentScores[m.student_id]) studentScores[m.student_id] = { total: 0, count: 0 };
+      studentScores[m.student_id].total += (m.score / m.total_marks) * 100; // convert to %
+      studentScores[m.student_id].count += 1;
+    });
+
+    let passedCount = 0;
+    studentIds.forEach(id => {
+      const s = studentScores[id];
+      if(s && s.count > 0) {
+        const avg = s.total / s.count; // average % across all subjects
+        if(avg >= PASS_MARK) passedCount++;
+      }
+      // if student has no marks at all, they count as "not passed"
+    });
+
+    const passRate = Math.round((passedCount / totalStudents) * 100);
+
+    res.json({
+      success: true,
+      passRate,
+      total: totalStudents,
+      passed: passedCount,
+      failed: totalStudents - passedCount
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server failed" });
+  }
+});
+
 app.get('/students/list/:grade',authC,async (req,res)=>{
   try {
     console.log("req.user.type",typeof req.user.id);
@@ -411,6 +473,86 @@ app.get('/students/list/:grade',authC,async (req,res)=>{
     })) || [];
 
     res.json({ success: true, students: result, count: result.length });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server failed" });
+  }
+});
+
+app.get('/stats/students', authC, async (req,res) => {
+  try {
+    const {status, grade} = req.query;
+    const owner_id = req.user.id;
+
+    console.log("Owner:", owner_id, "Filters:", status, grade)
+
+    // 1. Get school fee amount first
+    const { data: feeConfig } = await supabase
+      .from("fees_config")
+      .select("amount")
+      .eq("owner_id", owner_id)
+      .single();
+    const requiredFee = feeConfig?.amount || 0;
+
+    // 2. Get all students for this owner + filters
+    let query = supabase.from('students').select('*').eq('owner_id', owner_id);
+    if(status) query = query.eq('status', status); // if you have a status column
+    if(grade) query = query.eq('grade', grade);
+
+    const {data: students, error} = await query;
+    if(error) return res.status(500).json({success: false, error: error.message})
+
+    // 3. Get all payments for these students to calculate paid/balance
+    const studentIds = students.map(s => s.student_number);
+    const { data: payments } = await supabase
+      .from('fees_payments')
+      .select('student_id, amount')
+      .eq('owner_id', owner_id)
+      .in('student_id', studentIds);
+
+    // 4. Attach paid, balance, status to each student
+    const studentsWithFees = students.map(s => {
+      const paid = payments
+        ?.filter(p => p.student_id === s.student_number)
+        .reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+
+      const balance = requiredFee - paid;
+      const credit = paid - requiredFee;
+
+      let studentStatus = 'no-fee-set';
+      if(requiredFee > 0) {
+        if(paid === 0) studentStatus = 'unpaid';
+        else if(paid < requiredFee) studentStatus = 'partial';
+        else if(paid === requiredFee) studentStatus = 'paid';
+        else if(paid > requiredFee) studentStatus = 'prepaid';
+      }
+
+      return {
+        ...s,
+        paid,
+        required: requiredFee,
+        balance: balance > 0 ? balance : 0,
+        credit: credit > 0 ? credit : 0,
+        status: studentStatus
+      }
+    })
+
+    // 5. Filter by calculated status if needed
+    let filteredStudents = studentsWithFees;
+    if(status) filteredStudents = studentsWithFees.filter(s => s.status === status);
+
+    // 6. Recalculate perGrade based on filtered results
+    const perGrade = {F1:0, F2:0, F3:0, F4:0};
+    filteredStudents.forEach(s => {
+      if(perGrade[s.grade] !== undefined) perGrade[s.grade]++;
+    })
+
+    res.json({
+      success: true,
+      students: filteredStudents,
+      totalStudents: filteredStudents.length,
+      perGrade
+    })
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server failed" });
@@ -613,80 +755,6 @@ app.get('/fees/status', authC, async (req,res)=>{
     res.status(500).json({ success: false, message: "Server failed" });
   }
 });
-/*app.get('/fees/status', authC, async (req,res)=>{
-  try {
-    const owner_id = req.user.id;
-
-    // 1. Get school fee amount first
-    const { data: feeConfig } = await supabase
-      .from("fees_config")
-      .select("amount")
-      .eq("owner_id", owner_id)
-      .single();
-    
-    const requiredFee = feeConfig?.amount || 0;
-
-    // 2. Get all students for this owner
-    const { data: students } = await supabase
-      .from('students')
-      .select('student_number, full_name, grade')
-      .eq('owner_id', owner_id);
-
-    if(!students) return res.json({ success: true, students: [] });
-
-    // 3. Get all payments for this owner
-    const { data: payments } = await supabase
-      .from('fees_payments')
-      .select('student_id, amount')
-      .eq('owner_id', owner_id);
-
-    // 4. Calculate status for each student
-    const studentsWithStatus = students.map(s => {
-      const totalPaid = payments
-        .filter(p => p.student_id === s.student_number)
-        .reduce((sum, p) => sum + Number(p.amount), 0);
-
-      let status, balance, credit;
-      
-      if (requiredFee === 0) {
-        status = 'no-fee-set';
-      } else if (totalPaid === 0) {
-        status = 'unpaid';
-      } else if (totalPaid < requiredFee) {
-        status = 'partial';
-        balance = requiredFee - totalPaid;
-      } else if (totalPaid > requiredFee) {
-        status = 'prepaid';
-        credit = totalPaid - requiredFee;
-      } else {
-        status = 'paid';
-      }
-
-      return {
-        ...s,
-        status,
-        paid: totalPaid,
-        required: requiredFee,
-        balance: balance || 0,
-        credit: credit || 0
-      }
-    });
-
-    // 5. Calculate total balance for header
-    const totalBalance = studentsWithStatus.reduce((sum, s) => sum + s.balance, 0);
-    const balanceText = `$${totalBalance.toFixed(2)} Outstanding`;
-
-    res.json({ 
-      success: true, 
-      students: studentsWithStatus,
-      balanceText // send this so frontend can use it
-    });
-
-  } catch (error) {                                             
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server failed" });
-  }
-});*/
 
 app.listen(Port,"0.0.0.0",()=>{
   console.log(`server running on http://0.0.0.0:${Port}`);
