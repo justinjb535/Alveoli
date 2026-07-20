@@ -602,43 +602,59 @@ balanceEl.forEach(el => {
     el.textContent = data.balanceText;
 });
 
+const students = (data.students || []);
+const filterBtns = document.querySelectorAll(".filter-btn");
+function showEmpty(){
+feeStatusListEl.innerHTML = `<p style="color:#666">Select any button at the top</p>`;
+}
+showEmpty();
+function renderList(statusFilter, gradeFilter) {
+  const filter = students
+    .filter(s => (!statusFilter || s.status === statusFilter))
+    .filter(s => (!gradeFilter || s.grade === gradeFilter))
+    
+     if(filter.length === 0) {
+    feeStatusListEl.innerHTML = `<p style="color:#666">No students found</p>`;
+    return;
+  }
+    
+    feeStatusListEl.innerHTML = filter.map(s => {
+      let color, badge;
+      if (s.status === 'no-fee-set') {
+        color = "black"; badge = "SET FEE FIRST ⚠️";
+      } else if (s.status === 'unpaid') {
+        color = "black"; badge = `UNPAID $${s.paid}/$${s.required}`;
+      } else if (s.status === 'partial') {
+        color = "#777"; badge = `PARTIAL $${s.paid}/$${s.required} | Owing: $${s.balance}`;
+      } else if (s.status === 'prepaid') {
+        color = "black"; badge = `PREPAID $${s.paid}/$${s.required} | Credit: $${s.credit}`;
+      } else {
+        color = "#111"; badge = `PAID $${s.paid}/$${s.required}`;
+      }
 
-feeStatusListEl.innerHTML = (data.students || []).map(s => {
-    let color, badge;
-
-    if (s.status === 'no-fee-set') {
-        color = "black";
-        badge = "SET FEE FIRST ⚠️";
-    } else if (s.status === 'unpaid') {
-        color = "black";
-        badge = `UNPAID $${s.paid}/$${s.required}`;
-    } else if (s.status === 'partial') {
-        color = "#777";
-        badge = `PARTIAL $${s.paid}/$${s.required} | Owing: $${s.balance}`;
-    } else if (s.status === 'prepaid') {
-        color = "black";
-        badge = `PREPAID  $${s.paid}/$${s.required} | Credit: $${s.credit}`;
-    } else {
-        color = "#111";
-        badge = `PAID $${s.paid}/$${s.required}`;
-    }
-
-    return `
-      <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:8px; background:#fff">
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <div>
-            <div style="font-weight:600; font-size:15px; color:black;">${s.full_name}</div>
-            <div style="font-size:12px; color:#444;">Grade ${s.grade} • SID: ${s.student_number}</div>
-          </div>
-          <div style="color:${color}; font-weight:600; font-size:13px; text-align:right">
-            ${badge}
+      return `
+        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:8px; background:#fff">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <div style="font-weight:600; font-size:15px; color:black;">${s.full_name}</div>
+              <div style="font-size:12px; color:#444;">Grade ${s.grade} • SID: ${s.student_number}</div>
+            </div>
+            <div style="color:${color}; font-weight:600; font-size:13px; text-align:right">
+              ${badge}
+            </div>
           </div>
         </div>
-      </div>
-    `;
-}).join('');
-
+      `;
+    }).join('');
 }
+
+filterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const status = btn.dataset.status;
+  
+    renderList(status);
+  });
+});
 
 // 5. Record payment
 reco.addEventListener('click', async () => {
