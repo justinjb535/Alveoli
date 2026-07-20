@@ -637,6 +637,17 @@ app.get('/students/search', authC, async (req,res)=>{
     res.status(500).json({ success: false, message: "Server failed" });
   }
 });
+ 
+app.get('/stats/students', async (req,res) => {
+  const {status, grade} = req.query;
+  
+  let query = supabase.from('students').select('*');
+  if(status) query = query.eq('status', status);
+  if(grade) query = query.eq('grade', grade);
+
+  const {data} = await query;
+  res.json({success: true, students: data, ...otherStats})
+})
 
 app.post('/fees/pay', authC, express.json(), async (req,res)=>{
   try {

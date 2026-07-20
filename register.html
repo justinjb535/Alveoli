@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="white">  
+<title>Alveoli STLS</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body {
+      background: #1a1a1a;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    .input {
+      padding: 8px;
+      margin: 6px;
+      width: 250px;
+      border-radius: 6px;
+      border: none;
+      background:black; color:white;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #4caf50;
+      color: white;
+      cursor: pointer;
+      
+    }
+    button:hover { background: #45a049; }
+  </style>
+
+<script type="module">
+const BASE_URL = "http://10.123.98.126:2000"/*'https://alveoli.onrender.com' // use same IP as server*/
+
+document.getElementById("click").addEventListener("click", async () => {
+  const payload = {
+    name: document.getElementById("name").value,
+    teacherCount: Number(document.getElementById("nT").value),
+    studentCount: Number(document.getElementById("studentCount").value),
+    email: document.getElementById("sEmail").value,
+    address: document.getElementById("sA").value,
+    plan: document.getElementById("planSelect").value,
+    password: document.getElementById("pass").value // <- SEND PASSWORD TO SERVER
+  };
+
+  const response = await fetch(`${BASE_URL}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }, // NO TOKEN NEEDED
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json();
+  if (response.ok) {
+    alert(`School created! Now login`);
+    window.location.href = "teach.html"; // go login
+  } else {
+    alert(result.error || result.message || "Registration failed");
+  }
+});
+</script>
+</head>
+<body>
+  <img id="img1" src="av_logo" width="150" height="110"/>
+ <div id="hCon">
+  <h2 id="hName">Alveoli STLS</h2>
+  <p>Schools registration and license panel</p><br>
+ </div>
+ <div id="formC">
+  <form id="form">
+    <input type="text" placeholder="Enter Name Of School" id="name" class="input" required/><br>
+    <input type="number" class="input" id="nT" placeholder="Enter Number Of Teachers"/><br>
+    <input type="number" placeholder="Enter Number Of Students" id="studentCount" class="input" required/><br>
+    <input type="email" placeholder="Enter School's Email" id="sEmail" class="input" required/><br>
+    <input type="text" placeholder="Enter School Address" id="sA" class="input" required/><br>
+    <input type="password" placeholder="Enter password" id="pass" class="input" required/><br>
+    <br>
+    <div class="license-picker">
+      <div class="select-wrapper">
+        <select id="planSelect" class="input" required>
+          <option value="" disabled selected>Select license Plan...</option>
+          <option value="monthly" id="one">1 Month - $15</option>
+          <option value="quarterly" id="three">3 Months - $42</option>
+          <option value="yearly" id="wy">1 Year - $126</option>
+        </select>
+      </div>
+      <p id="planInfo" style="margin-top:8px; font-size:13px; color:#aaa;"></p>
+    </div>
+    <button id="click" type="button">Register School</button><br>
+    <a href="teach.html" style="color:green">School already registered on Alveoli</a>
+  </form>
+ </div>
+  <div id="licenseStatus" style="margin-top:20px; color:yellow;"></div>
+
+  <script type="module">
+  let studentCountinput = document.getElementById("studentCount");
+  let one = document.getElementById("one");
+  let three = document.getElementById("three");
+  let wy = document.getElementById("wy");
+  
+  studentCountinput.addEventListener("input",function(){
+   let studentCount = Number(studentCountinput.value)
+  if(studentCount > 0 && studentCount < 220){
+    one.textContent = "1 Month -$8";
+    three.textContent = "3 Months -$25";
+    wy.textContent = "1 year -$98";
+  }else{
+    one.textContent = "1 Month - $15"
+    three.textContent = "3 Months - $42"
+    wy.textContent = "1 Year - $126"
+  }
+  });
+  
+
+  </script>
+</body>
+</html>
