@@ -1,5 +1,5 @@
-const CACHE_NAME = "alveoli-v1";
-const FILES_TO_CACHE = [
+const CACHE_NAME = 'alveoli-cache-v1.1.1'; // <-- bump this every release. v1 was v1, now v2
+const urlsToCache = [
   "/",
   "/index.html",
   "/dash.html",
@@ -14,14 +14,44 @@ const FILES_TO_CACHE = [
   "/alv_logo"
 ];
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
+// 1. INSTALL: cache new files and take over immediately
+self.addEventListener('install', event => {
+  self.skipWaiting(); // force new SW to activate right away
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request))
+// 2. ACTIVATE: delete old caches
+self.addEventListener('activate', event => {
+  self.clients.claim(); // take control of all open tabs
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache); // delete v1 cache
+          }
+        })
+      );
+    })
+  );
+});
+
+// 3. FETCH: serve from cache, but always check network first for html/js
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // If we have it in cache, return it. But also fetch new version in background
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          return caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+        });
+        return response || fetchPromise;
+      })
   );
 });

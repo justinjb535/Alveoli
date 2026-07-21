@@ -1,14 +1,8 @@
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js");
-  });
-}
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const SUPABASE_URL = 'https://pctbcbdqgicazzgwlrhr.supabase.co'
 const SUPABASE_KEY = 'sb_publishable_Ck_wUGp0GaYOiyri3LC2VQ_VJ4um9uL'
-const BASE_URL = /*"http://10.123.98.126:2000"*/ "https://alveoli.onrender.com"; 
+const BASE_URL = "http://10.48.46.64:2000" /*"https://alveoli.onrender.com"*/; 
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
@@ -70,7 +64,7 @@ let mark   = document.getElementById("markP");     // Marks page div
 let sFeesP  = document.getElementById("sFees");     // Fees page div
 //let reportsP= document.getElementById("reportsP");  // Reports page div
 let warning = document.getElementById("warningSign");       // Main app container
-let API = /*"http://10.123.98.126:2000"*/ "https://alveoli.onrender.com";
+let API = "http://10.48.46.64:2000"/*"https://alveoli.onrender.com";*/
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM ready, wiring swipe');
 
@@ -171,28 +165,28 @@ if(dBtn) dBtn.onclick = () => {
   seatB.style.display = "none";
   sdBar.style.display = "none";
   dash.style.display = "block";
-  warning.style.display = "none";
+  //warning.style.display = "none";
 }
 
 if(regbtn) regbtn.onclick = () => {
   seatB.style.display = "none";
   sdBar.style.display = "none";
   reg.style.display = "block";
-  warning.style.display = "none";
+ // warning.style.display = "none";
 }
 
 if(sBtn) sBtn.onclick = () => {
   seatB.style.display = "none";
   sdBar.style.display = "none";
   sub.style.display = "block";
-  warning.style.display = "none";
+  //warning.style.display = "none";
 }
 
 if(mbtn) mbtn.onclick = () => {
   seatB.style.display = "none";
   sdBar.style.display = "none";
   markP.style.display = "block";
-  warning.style.display = "none";
+  //warning.style.display = "none";
 }
 
 // FIXED: feesbtn opens fees page
@@ -217,7 +211,7 @@ if(feesbtn) feesbtn.onclick = (e) => {
   if(enteredPin === savedPin){
   sdBar.style.display = "none";
   sFeesP.style.display = "block"; // show fees page
-  warning.style.display = "none";
+  //warning.style.display = "none";
   }else if(!enteredPin){
     alert("Nothing was entered please try again")
   }else{
@@ -317,7 +311,8 @@ async function loadSubjects() {
         </div>`;
       return;
     }
-document.getElementById('subjectSelectList').innerHTML = 
+
+    document.getElementById('subjectSelectList').innerHTML = 
       data.subjects?.map(s => `<div class="subject" onclick="selectSubject('${s}')">${s}</div>`).join('');
   } catch(e) {
     console.error("loadSubjects error:", e);
@@ -501,7 +496,6 @@ async function loadSchoolFee(){
   currentSchoolFeeEl.textContent = `$${data.schoolFee}`;
   schoolFeeAmountEl.value = data.schoolFee;
 }
-
 // 2. Head saves new amount
 setSchoolFeeBtn.addEventListener('click', async () => {
   console.log("click fees setting ")
@@ -602,44 +596,60 @@ balanceEl.forEach(el => {
     el.textContent = data.balanceText;
 });
 
+const students = (data.students || []);
+const filterBtns = document.querySelectorAll(".filter-btn");
+function showEmpty(){
+feeStatusListEl.innerHTML = `<p style="color:#666">Select any button at the top</p>`;
+}
+showEmpty();
+function renderList(statusFilter, gradeFilter) {
+  const filter = students
+    .filter(s => (!statusFilter || s.status === statusFilter))
+    .filter(s => (!gradeFilter || s.grade === gradeFilter))
+    
+     if(filter.length === 0) {
+    feeStatusListEl.innerHTML = `<p style="color:#666">No students found</p>`;
+    return;
+  }
+    
+    feeStatusListEl.innerHTML = filter.map(s => {
+      let color, badge;
+      if (s.status === 'no-fee-set') {
+        color = "black"; badge = "SET FEE FIRST ⚠️";
+      } else if (s.status === 'unpaid') {
+        color = "black"; badge = `UNPAID $${s.paid}/$${s.required}`;
+      } else if (s.status === 'partial') {
+        color = "#777"; badge = `PARTIAL $${s.paid}/$${s.required} | Owing: $${s.balance}`;
+      } else if (s.status === 'prepaid') {
+        color = "black"; badge = `PREPAID $${s.paid}/$${s.required} | Credit: $${s.credit}`;
+      } else {
+        color = "#111"; badge = `PAID $${s.paid}/$${s.required}`;
+      }
 
-feeStatusListEl.innerHTML = (data.students || []).map(s => {
-    let color, badge;
-
-    if (s.status === 'no-fee-set') {
-        color = "black";
-        badge = "SET FEE FIRST ⚠️";
-    } else if (s.status === 'unpaid') {
-        color = "black";
-        badge = `UNPAID $${s.paid}/$${s.required}`;
-    } else if (s.status === 'partial') {
-        color = "#777";
-        badge = `PARTIAL $${s.paid}/$${s.required} | Owing: $${s.balance}`;
-    } else if (s.status === 'prepaid') {
-        color = "black";
-        badge = `PREPAID  $${s.paid}/$${s.required} | Credit: $${s.credit}`;
-    } else {
-        color = "#111";
-        badge = `PAID $${s.paid}/$${s.required}`;
-    }
-
-    return `
-      <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:8px; background:#fff">
-        <div style="display:flex; justify-content:space-between; align-items:center">
-          <div>
-            <div style="font-weight:600; font-size:15px; color:black;">${s.full_name}</div>
-            <div style="font-size:12px; color:#444;">Grade ${s.grade} • SID: ${s.student_number}</div>
-          </div>
-          <div style="color:${color}; font-weight:600; font-size:13px; text-align:right">
-            ${badge}
+      return `
+        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:8px; background:#fff">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <div style="font-weight:600; font-size:15px; color:black;">${s.full_name}</div>
+              <div style="font-size:12px; color:#444;">Grade ${s.grade} • SID: ${s.student_number}</div>
+            </div>
+            <div style="color:${color}; font-weight:600; font-size:13px; text-align:right">
+              ${badge}
+            </div>
           </div>
         </div>
-      </div>
-    `;
-}).join('');
-
+      `;
+    }).join('');
 }
 
+filterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const status = btn.dataset.status;
+  
+    renderList(status);
+  });
+});
+}
 // 5. Record payment
 reco.addEventListener('click', async () => {
   let studentId = studentIdEl.value.trim(); // SID from hidden input
@@ -922,6 +932,7 @@ function goToMain(){
   
   console.log('Exited to main');
 }
+
 // Attach exit buttons AFTER DOM loads - do this ONCE only
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll(".exit").forEach(btn => {
@@ -982,9 +993,21 @@ async function loadDashboardStats(){
 // Call on load
 loadDashboardStats();
 
-// Put this at bottom of dash.html and regi.html
+async function loadPassRate() {
+  const res = await fetch(`${API}/dashboard/passrate?grade=12&term=Term1`,{
+    headers: {
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_KEY, "Authorization" : `Bearer ${session.access_token}`}
+  });
+  const data = await res.json();
+  if(data.success){
+    document.getElementById('passRate').innerText = data.passRate + '%';
+    //document.getElementById('passRateSub').innerText = `${data.passed} of ${data.total} students`;
+    console.log('passrate',data.passRate);
+  }
+}
+
 history.pushState(null, null, location.href);
 window.onpopstate = function () {
     history.go(1); // forces it to stay. Or use navigator.app.exitApp() for Capacitor
 };
-

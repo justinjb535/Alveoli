@@ -341,3 +341,72 @@ width:100%;
      text-decoration:none;
      cursor:none;
    }
+ .filter-bar {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-btn {
+    padding: 5px 11px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f9f9f9;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    background: #e5e7eb;
+  }
+
+  .filter-btn.active {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+  }
+
+  #gradeFilter {
+    padding: 8px;
+    border: 1px solid green;
+    border-radius: 6px;
+    font-size: 14px;
+    background:;
+    cursor: pointer;
+  }
+
+  .student-card {
+   border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #fff;
+  }
+
+  .student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .student-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: black;
+  }
+
+  .student-meta {
+    font-size: 12px;
+    color: #444;
+  }
+
+  .student-badge {
+    font-weight: 600;
+    font-size: 13px;
+    text-align: right;
+  }
+   
