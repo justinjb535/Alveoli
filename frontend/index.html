@@ -255,7 +255,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     if(!session) {
       console.log('NO TOKEN - Go to login');
       document.querySelector('.loading-text').innerText = "No session found. Redirecting to login...";
-      setTimeout(() => window.location.href = 'register.html', 1500);
+      setTimeout(() => window.location.href = './register.html', 1500);
       return;
     }
 
@@ -274,7 +274,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 
       if(res.status === 200){
         document.querySelector('.loading-text').innerText = "Welcome back!";
-        setTimeout(() => window.location.href = 'dash.html', 800); 
+        setTimeout(() => window.location.href = './dash.html', 800); 
+ alert("anytime now ");
       }
       else if(res.status === 404) {
         document.querySelector('.loading-text').innerText = "Let's set up your school";
