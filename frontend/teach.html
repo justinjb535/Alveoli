@@ -36,7 +36,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   }
 })
 
-const handleRedirect = async () => {
+/*const handleRedirect = async () => {
   const { data: { session }} = await supabase.auth.getSession(); // <-- get it here
   
   if(!session) return;// no session yet, stay on login page
@@ -83,9 +83,57 @@ supabase.auth.onAuthStateChange((_event, session) => {
 })
 
 // Run on page load
-handleRedirect();
-</script>
+handleRedirect();*/
+// stop here 
+const handleRedirect = async (session) => {
+  if(!session) return;
 
+  console.log('TOKEN EXISTS:', !!session.access_token);
+
+  const res = await fetch(`${BASE_URL}/me`, {
+    headers: { 'Authorization': `Bearer ${session.access_token}` }
+  });
+
+  if(res.status === 200){
+    window.location.href = 'dash.html'; 
+    document.getElementById('regi').style.display = "none";
+  }
+  else if(res.status === 404) {
+    document.getElementById('regi').style.display = "block"
+  } 
+  else {
+    alert('Auth error. Please login again');
+    await supabase.auth.signOut();
+  }
+}
+
+// EMAIL LOGIN
+window.emailLogin = async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) return alert(error.message);
+  // don't call handleRedirect here. Let onAuthStateChange do it
+}
+
+// GOOGLE LOGIN  
+window.googleLogin = async () => {
+  await supabase.auth.signInWithOAuth({ 
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/login.html' } // use current origin
+  })
+}
+
+// THIS FIRES WHEN SESSION IS ACTUALLY READY
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session) handleRedirect(session)
+})
+
+// Check if already logged in on page load
+supabase.auth.getSession().then(({data: {session}}) => {
+  if(session) handleRedirect(session)
+})
+</script>
 </head>
 <body>
   <div class="card">
