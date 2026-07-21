@@ -289,7 +289,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
       console.log(e);
       document.querySelector('.loading-text').innerText = "Server waking up... retrying";
       // Retry once after 3 sec
-      setTimeout(() => { checked = false; doRedirect(); }, 3000);
+      setTimeout(() => { checked = false; doRedirect(); }, 30000);
     }
   }
 
