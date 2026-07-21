@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = 'https://pctbcbdqgicazzgwlrhr.supabase.co'
 const SUPABASE_KEY = 'sb_publishable_Ck_wUGp0GaYOiyri3LC2VQ_VJ4um9uL'
-const BASE_URL = "http://10.48.46.64:2000" /*"https://alveoli.onrender.com"*/; 
+const BASE_URL = "https://alveoli.onrender.com"; 
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
@@ -64,7 +64,7 @@ let mark   = document.getElementById("markP");     // Marks page div
 let sFeesP  = document.getElementById("sFees");     // Fees page div
 //let reportsP= document.getElementById("reportsP");  // Reports page div
 let warning = document.getElementById("warningSign");       // Main app container
-let API = "http://10.48.46.64:2000"/*"https://alveoli.onrender.com";*/
+let API ="https://alveoli.onrender.com";
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM ready, wiring swipe');
 
