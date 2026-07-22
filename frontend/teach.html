@@ -36,7 +36,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   }
 })
 
-/*const handleRedirect = async () => {
+const handleRedirect = async () => {
   const { data: { session }} = await supabase.auth.getSession(); // <-- get it here
   
   if(!session) return;// no session yet, stay on login page
@@ -83,9 +83,10 @@ supabase.auth.onAuthStateChange((_event, session) => {
 })
 
 // Run on page load
-handleRedirect();*/
+handleRedirect();
 // stop here 
-const handleRedirect = async (session) => {
+
+/*const handleRedirect = async (session) => {
   if(!session) return;
 
   console.log('TOKEN EXISTS:', !!session.access_token);
@@ -132,7 +133,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
 // Check if already logged in on page load
 supabase.auth.getSession().then(({data: {session}}) => {
   if(session) handleRedirect(session)
-})
+})*/
 </script>
 </head>
 <body>
